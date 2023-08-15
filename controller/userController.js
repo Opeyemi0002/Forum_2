@@ -2,7 +2,9 @@ import User from "../Models/userModels.js"
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import generateToken from "../utility/generateToken.js";
-import obtainToken from "../utility/obtainTokenFromHeader.js";
+//import obtainToken from "../utility/obtainTokenFromHeader.js";
+
+
  export const registerUser = async (req, res) => {
     try{
         const {firstname, lastname, email, password} = req.body;
@@ -10,7 +12,7 @@ import obtainToken from "../utility/obtainTokenFromHeader.js";
         const newUser = await User.findOne({email});
 
         if(newUser) {
-            res.json({
+            return res.json({
                 message: "this user has been registered already"
             });
         }
@@ -81,3 +83,98 @@ export const loginUser = async (req,res) => {
     }
 
 } 
+
+export const profilePhotoUploadController = async (req,res)=> {
+    try{
+        const profileUserToBeUpdated = await User.findById(req.userAuth);
+
+        if (!profileUserToBeUpdated) {
+             res.json({
+                status:"error",
+                message: "user not found"
+            });
+        }
+
+        if(req.file) {
+            await User.findByIdAndUpdate(req.userAuth, {
+                $set:{
+                    profilephoto: req.file.path
+                }
+            }, {
+                new:true
+            })
+            res.json({
+            status:"success",
+            data: "Image uploaded successfully"
+        });
+        }
+        
+    }catch(error) {
+        console.log(error.message);
+    }
+} 
+
+export const profileViewLogic = async (req,res)=> {
+    try{
+        const profileOwner = await User.findById(req.params.id);
+        const profileViewer = await User.findById(req.userAuth);
+
+        if (profileOwner && profileViewer) {
+            const profileAlreadyViewed = profileOwner.views.find(view=>view.toString()===profileViewer._id.toString());
+
+            if (profileAlreadyViewed) {
+                return res.json({
+                    status:"error",
+                    message: " you have viewed this profile"
+                });
+            }else {
+                profileOwner.views.push(profileViewer._id);
+                await profileOwner.views.save();
+
+                return res.json({
+                    message: "you have just viewed this profile"
+                });
+
+            }
+        }
+        res.json({
+            message:"the page is not available at this moment"
+        });
+    }catch(error) {
+        console.log(error.message);
+    }
+}
+
+export const FollowLogic = async (req,res)=> {
+    try{
+        const profileTofollow = await User.findById(req.params.id);
+        const profileThatfollow = await User.findById(req.userAuth);
+
+        if(profileTofollow && profileThatfollow) {
+            const userAlreadyFollowed= await profileThatfollow.following.find(follower=>follower.toString()=== profileTofollow._id.toString());
+
+            if(userAlreadyFollowed) {
+                return registerUser.json({
+                    message:"you have already follow this profile"
+                });
+            }else {
+                profileThatfollow.following.push(profileTofollow._id);
+                await profileThatfollow.following.save();
+
+                profileTofollow.followers.push(profileThatfollow._id);
+                await profileTofollow.followers.save();
+
+                return res.json({
+                    message: `you have just followed ${profileTofollow.firstname}`
+                });
+
+            }
+
+        }
+        res.json({
+            message:"you cannot access this page"
+        });
+    }catch(error) {
+        console.log(error.message);
+    }
+}

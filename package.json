@@ -21,10 +21,13 @@
   "homepage": "https://github.com/Opeyemi0002/Forum_2#readme",
   "dependencies": {
     "bcrypt": "^5.1.0",
+    "cloudinary": "^1.40.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.2",
+    "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "nodemon": "^3.0.1"
   }
 }
