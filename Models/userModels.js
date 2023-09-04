@@ -52,6 +52,10 @@ const usermodel = new Schema({
         type:Schema.Types.ObjectId,
         ref: "Comment"
     }],
+    block: [{
+        type:Schema.Types.ObjectId,
+        ref: "User"
+    }],
     award: {
         type:String,
         enum:["Bronze", "Silver", "Gold"],
